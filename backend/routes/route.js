@@ -1,5 +1,7 @@
 const router = require("express").Router();
 const Student = require("../models/studentSchema.js"); 
+const Teacher = require('../models/teacherSchema.js');
+
 
 // const { adminRegister, adminLogIn, deleteAdmin, getAdminDetail, updateAdmin } = require('../controllers/admin-controller.js');
 
@@ -45,6 +47,7 @@ const {
   removeStudentAttendanceBySubject,
   removeStudentAttendance,
   getStudentAttendance,
+  getAttendanceWithLocation,
 } = require("../controllers/student_controller.js");
 const {
   subjectCreate,
@@ -169,7 +172,44 @@ router.delete("/Subject/:id", deleteSubject);
 router.delete("/Subjects/:id", deleteSubjects);
 router.delete("/SubjectsClass/:id", deleteSubjectsByClass);
 
+
 //newly added 
 
 router.post("/upload-students", uploadStudents);
+// POST endpoint to update teacher's location
+router.post('/api/teacher-location', async (req, res) => {
+  const { latitude, longitude, teacherId } = req.body;
+
+  try {
+    // Update teacher's location
+    const teacher = await Teacher.findById(teacherId);
+    if (!teacher) {
+      return res.status(404).json({ message: 'Teacher not found' });
+    }
+
+    teacher.location.latitude = latitude;
+    teacher.location.longitude = longitude;
+
+    // Save the updated teacher object
+    await teacher.save();
+
+    // Reset the location after 5 minutes (300,000ms)
+    setTimeout(async () => {
+      teacher.location.latitude = 1000; // reset to default value
+      teacher.location.longitude = 1000; // reset to default value
+      await teacher.save();
+    }, 300000); // 5 minutes in milliseconds
+
+    res.status(200).json({ message: 'Location updated successfully' });
+  } catch (error) {
+    console.error('Error updating teacher location:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+//new new 
+
+
+
+
 module.exports = router;

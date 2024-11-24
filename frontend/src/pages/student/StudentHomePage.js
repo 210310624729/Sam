@@ -12,44 +12,44 @@ import { PieChart, Pie, Cell, Legend, Tooltip } from "recharts";
 import styled from "styled-components";
 import { getUserDetails } from "../../redux/userRelated/userHandle";
 import { getSubjectList } from "../../redux/sclassRelated/sclassHandle";
-import io from 'socket.io-client';
+// import io from 'socket.io-client';
 
-const socket = io('http://localhost:2003');  
+// const socket = io('http://localhost:2003');  
 
 const StudentHomePage = () => {
   const dispatch = useDispatch();
   const [studentLocation, setStudentLocation] = useState(null);
   const [isPresent, setIsPresent] = useState(null);
-  useEffect(() => {
-    // Listen for the request to provide location
-    socket.on('request-student-location', () => {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    const { latitude, longitude } = position.coords;
-                    setStudentLocation({ latitude, longitude });
+//   useEffect(() => {
+//     // Listen for the request to provide location
+//     socket.on('request-student-location', () => {
+//         if (navigator.geolocation) {
+//             navigator.geolocation.getCurrentPosition(
+//                 (position) => {
+//                     const { latitude, longitude } = position.coords;
+//                     setStudentLocation({ latitude, longitude });
 
-                    // Send student location to backend
-                    fetch('http://localhost:2003/api/student-location', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ studentLocation: { latitude, longitude } }),
-                    }).then(response => response.json())
-                      .then(data => {
-                          console.log(data.message);
-                          setIsPresent(true)
-                          // Optionally, handle attendance response
-                      });
-                },
-                (error) => {
-                    console.error("Error getting student's location:", error.message);
-                }
-            );
-        }
-    });
-}, []);
+//                     // Send student location to backend
+//                     fetch('http://localhost:2003/api/student-location', {
+//                         method: 'POST',
+//                         headers: {
+//                             'Content-Type': 'application/json',
+//                         },
+//                         body: JSON.stringify({ studentLocation: { latitude, longitude } }),
+//                     }).then(response => response.json())
+//                       .then(data => {
+//                           console.log(data.message);
+//                           setIsPresent(true)
+//                           // Optionally, handle attendance response
+//                       });
+//                 },
+//                 (error) => {
+//                     console.error("Error getting student's location:", error.message);
+//                 }
+//             );
+//         }
+//     });
+// }, []);
 
 
 

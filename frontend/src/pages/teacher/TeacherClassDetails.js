@@ -7,9 +7,9 @@ import { Paper, Box, Typography, ButtonGroup, Button, Popper, Grow, ClickAwayLis
 import { BlackButton, BlueButton} from "../../components/buttonStyles";
 import TableTemplate from "../../components/TableTemplate";
 import { KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
-import io from 'socket.io-client';
+// import io from 'socket.io-client';
 
-const socket = io('http://localhost:2003');
+// const socket = io('http://localhost:2003');
 const TeacherClassDetails = () => {
     const navigate = useNavigate()
     const dispatch = useDispatch();
@@ -21,16 +21,21 @@ const TeacherClassDetails = () => {
                 (position) => {
                     const { latitude, longitude } = position.coords;
                     setTeacherLocation({ latitude, longitude });
-
+    
+                    // Get the current teacher ID from Redux or context
+                    const teacherId = currentUser._id; // assuming you have the teacher's ID in currentUser
+    
                     // Send teacher's location to backend
                     fetch('http://localhost:2003/api/teacher-location', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                         },
-                        body: JSON.stringify({ latitude, longitude }),
-                    }).then(response => response.json())
-                      .then(data => console.log(data.message));
+                        body: JSON.stringify({ latitude, longitude, teacherId }),
+                    })
+                    .then(response => response.json())
+                    .then(data => console.log(data.message))
+                    .catch(err => console.error('Error sending location:', err));
                 },
                 (error) => {
                     console.error("Error getting teacher's location:", error.message);
@@ -40,6 +45,7 @@ const TeacherClassDetails = () => {
             console.error("Geolocation is not supported by this browser.");
         }
     };
+    
 
     const { sclassStudents, loading, error, getresponse } = useSelector((state) => state.sclass);
 
