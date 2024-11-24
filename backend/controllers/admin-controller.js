@@ -156,58 +156,53 @@ const getAdminDetail = async (req, res) => {
 
 const uploadStudents = async (req, res) => {
   try {
-    const { students } = req.body; // Array of students from the frontend
+    const { students } = req.body;
 
     if (!students || students.length === 0) {
-      return res
-        .status(400)
-        .json({ success: false, message: "No students data provided" });
+      return res.status(400).json({
+        success: false,
+        message: "No students data provided",
+      });
     }
 
-    // Validate and process students
     const processedStudents = [];
     for (let studentData of students) {
       const { Name, RollNumber, Password, Class } = studentData;
 
-      // Check if all required fields are present
       if (!Name || !RollNumber || !Password || !Class) {
-        return res
-          .status(400)
-          .json({ success: false, message: "Missing required student data" });
+        return res.status(400).json({
+          success: false,
+          message: "Missing required student data",
+        });
       }
 
-      // Check if the class exists
-      const sclass = await Sclass.findOne({ name: Class });
+      const sclass = await Sclass.findOne({ sclassName: Class });
       if (!sclass) {
-        return res
-          .status(404)
-          .json({ success: false, message: `Class ${Class} not found` });
+        return res.status(404).json({
+          success: false,
+          message: `Class ${Class} not found`,
+        });
       }
 
-      // Check if the student already exists
       const existingStudent = await Student.findOne({
         rollNum: RollNumber,
-        school: req.user._id,
+        school: "673da56b7d5944206df1e7f3",
       });
       if (existingStudent) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-            message: `Student with roll number ${RollNumber} already exists`,
-          });
+        return res.status(400).json({
+          success: false,
+          message: `Student with roll number ${RollNumber} already exists`,
+        });
       }
 
-      // Create a new student document
       const newStudent = new Student({
         name: Name,
         rollNum: RollNumber,
         password: Password,
         sclassName: sclass._id,
-        school: req.user._id, // Assume current logged-in user is the admin
+        school: "673da56b7d5944206df1e7f3",
       });
 
-      // Save the student
       await newStudent.save();
       processedStudents.push(newStudent);
     }
