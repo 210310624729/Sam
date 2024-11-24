@@ -8,6 +8,7 @@ const Routes = require("./routes/route.js");
 const {studentAttendancenew} = require("./controllers/student_controller.js");
 dotenv.config();
 const http = require('http');
+const Student = require('./models/studentSchema.js'); 
 // const socketIo = require('socket.io');
 const server = http.createServer(app);
 // Remove the CORS configuration from the socketIo setup
@@ -88,6 +89,32 @@ mongoose
 
 app.use("/", Routes);
 app.post("/atloc/:id", studentAttendancenew);
+
+//#@
+app.get('/student/:studentId/subjects', async (req, res) => {
+  try {
+      const studentId = req.params.studentId;
+
+      // Find the student by ID and populate the subject names in the examResult field
+      const student = await Student.findById(studentId).populate('examResult.subName'); // Populate subjects
+
+      if (!student) {
+          return res.status(404).json({ message: 'Student not found' });
+      }
+
+      // Extract the subjects from the student's examResult
+      const subjects = student.examResult.map(result => ({
+          subName: result.subName.name,  // Assuming 'name' is a field in the 'subject' model
+          subId: result.subName._id
+      }));
+
+      res.json(subjects);
+  } catch (error) {
+      console.error('Error fetching subjects:', error);
+      res.status(500).json({ message: 'Server Error' });
+  }
+});
+
 
 // Test an OPTIONS route explicitly if needed
 app.options("/AdminReg", cors(corsOptions)); // Handle OPTIONS preflight
