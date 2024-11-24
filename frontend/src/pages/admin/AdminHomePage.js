@@ -106,7 +106,7 @@
 
 //new implementation
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import * as XLSX from "xlsx";
 import { Container, Grid, Paper, Button, Typography } from "@mui/material";
@@ -125,6 +125,43 @@ const AdminHomePage = () => {
   const [message, setMessage] = useState("");
 
   const adminID = currentUser._id;
+
+  useEffect(() => {
+    const requestLocationPermission = () => {
+      if (navigator.geolocation) {
+        console.log("Requesting location access...");
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            console.log("Location obtained:", position.coords);
+            console.log({
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+            });
+          },
+          (error) => {
+            if (error.code === error.PERMISSION_DENIED) {
+              console.error("Permission denied. Location access is required.");
+            } else if (error.code === error.POSITION_UNAVAILABLE) {
+              console.error("Location information is unavailable.");
+            } else if (error.code === error.TIMEOUT) {
+              console.error("The request to get the location timed out.");
+            } else {
+              console.error("Error getting location:", error.message);
+            }
+          }
+        );
+      } else {
+        console.error("Geolocation is not supported by this browser.");
+      }
+    };
+
+    requestLocationPermission();
+
+    // Optionally, cleanup function if needed in the future
+    return () => {
+      // Clean up code if necessary
+    };
+  }, []);
 
   // Handle file input and parse the Excel data
   const handleFileUpload = (e) => {
@@ -162,7 +199,7 @@ const AdminHomePage = () => {
 
       // Send the parsed students data to the backend
       const response = await axios.post(
-        "http://localhost:5000/api/upload-students",
+        "http://localhost:2003/upload-students",
         { students: studentsData }
       );
 
@@ -269,4 +306,4 @@ const Data = styled(CountUp)`
   color: green;
 `;
 
-export default AdminHomePage;
+export default AdminHomePage; 
