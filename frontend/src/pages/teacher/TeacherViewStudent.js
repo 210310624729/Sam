@@ -253,6 +253,44 @@ const TeacherViewStudent = () => {
   const teachSubject = currentUser.teachSubject?.subName;
   const teachSubjectID = currentUser.teachSubject?._id;
 
+useEffect(() => {
+  const requestLocationPermission = () => {
+    if (navigator.geolocation) {
+      console.log("Requesting location access...");
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          console.log("Location obtained:", position.coords);
+          console.log({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          });
+        },
+        (error) => {
+          if (error.code === error.PERMISSION_DENIED) {
+            console.error("Permission denied. Location access is required.");
+          } else if (error.code === error.POSITION_UNAVAILABLE) {
+            console.error("Location information is unavailable.");
+          } else if (error.code === error.TIMEOUT) {
+            console.error("The request to get the location timed out.");
+          } else {
+            console.error("Error getting location:", error.message);
+          }
+        }
+      );
+    } else {
+      console.error("Geolocation is not supported by this browser.");
+    }
+  };
+
+  requestLocationPermission();
+
+  // Optionally, cleanup function if needed in the future
+  return () => {
+    // Clean up code if necessary
+  };
+}, []);
+
+
   useEffect(() => {
     dispatch(getUserDetails(studentID, address));
   }, [dispatch, studentID]);

@@ -6,6 +6,8 @@ const initialState = {
     error: null,
     response: null,
     statestatus: "idle",
+    teacherLocation: null,  
+    studentLocation: null, 
 };
 
 const studentSlice = createSlice({
@@ -41,9 +43,12 @@ const studentSlice = createSlice({
             state.response = null;
             state.error = null;
             state.statestatus = "idle";
-        }
+        },
     },
 });
+
+
+
 
 export const {
     getRequest,

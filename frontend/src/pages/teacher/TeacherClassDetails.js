@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect , useState} from "react";
 import * as React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom'
@@ -7,10 +7,40 @@ import { Paper, Box, Typography, ButtonGroup, Button, Popper, Grow, ClickAwayLis
 import { BlackButton, BlueButton} from "../../components/buttonStyles";
 import TableTemplate from "../../components/TableTemplate";
 import { KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
+import io from 'socket.io-client';
 
+const socket = io('http://localhost:2003');
 const TeacherClassDetails = () => {
     const navigate = useNavigate()
     const dispatch = useDispatch();
+    const [teacherLocation, setTeacherLocation] = useState(null);
+
+    const handleTakeAttendance = () => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const { latitude, longitude } = position.coords;
+                    setTeacherLocation({ latitude, longitude });
+
+                    // Send teacher's location to backend
+                    fetch('http://localhost:2003/api/teacher-location', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ latitude, longitude }),
+                    }).then(response => response.json())
+                      .then(data => console.log(data.message));
+                },
+                (error) => {
+                    console.error("Error getting teacher's location:", error.message);
+                }
+            );
+        } else {
+            console.error("Geolocation is not supported by this browser.");
+        }
+    };
+
     const { sclassStudents, loading, error, getresponse } = useSelector((state) => state.sclass);
 
     const { currentUser } = useSelector((state) => state.user);
@@ -36,7 +66,7 @@ const TeacherClassDetails = () => {
             rollNum: student.rollNum,
             id: student._id,
         };
-    })
+    });
 
     const StudentsButtonHaver = ({ row }) => {
         const options = ['Take Attendance', 'Provide Marks'];
@@ -167,6 +197,8 @@ const TeacherClassDetails = () => {
                             {Array.isArray(sclassStudents) && sclassStudents.length > 0 &&
                                 <TableTemplate buttonHaver={StudentsButtonHaver} columns={studentColumns} rows={studentRows} />
                             }
+                        <button onClick={handleTakeAttendance}>Take Attendance</button>
+                        
                         </Paper>
                     )}
                 </>
