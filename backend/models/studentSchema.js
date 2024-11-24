@@ -1,127 +1,64 @@
 const mongoose = require('mongoose');
 
-// const studentSchema = new mongoose.Schema({
-//     name: {
-//         type: String,
-//         required: true
-//     },
-//     rollNum: {
-//         type: Number,
-//         required: true
-//     },
-//     password: {
-//         type: String,
-//         required: true
-//     },
-//     sclassName: {
-//         type: mongoose.Schema.Types.ObjectId,
-//         ref: 'sclass',
-//         required: true,
-//     },
-//     school: {
-//         type: mongoose.Schema.Types.ObjectId,
-//         ref: 'admin',
-//         required: true,
-//     },
-//     role: {
-//         type: String,
-//         default: "Student"
-//     },
-//     examResult: [
-//         {
-//             subName: {
-//                 type: mongoose.Schema.Types.ObjectId,
-//                 ref: 'subject',
-//             },
-//             marksObtained: {
-//                 type: Number,
-//                 default: 0
-//             }
-//         }
-//     ],
-//     attendance: [{
-//         date: {
-//             type: Date,
-//             required: true
-//         },
-//         status: {
-//             type: String,
-//             enum: ['Present', 'Absent'],
-//             required: true
-//         },
-//         subName: {
-//             type: mongoose.Schema.Types.ObjectId,
-//             ref: 'subject',
-//             required: true
-//         }
-//     }]
-// });
-//new student schema 
-
 const studentSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-  },
-  rollNum: {
-    type: Number,
-    required: true,
-  },
-  password: {
-    type: String,
-    required: true,
-  },
-  sclassName: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "sclass",
-    required: true,
-  },
-  school: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "admin",
-    required: true,
-  },
-  role: {
-    type: String,
-    default: "Student",
-  },
-  examResult: [
-    {
-      subName: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "subject",
-      },
-      internalMarks: {
-        type: Map,
-        of: Number, // Exam name as key, percentage as value
-        default: {},
-      },
-      externalMarks: {
-        type: Map,
-        of: Number, // Exam name as key, percentage as value
-        default: {},
-      },
-    },
-  ],
-  attendance: [
-    {
-      date: {
-        type: Date,
-        required: true,
-      },
-      status: {
+    name: {
         type: String,
-        enum: ["Present", "Absent"],
-        required: true,
-      },
-      subName: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "subject",
-        required: true,
-      },
+        required: true
     },
-  ],
+    rollNum: {
+        type: Number,
+        required: true
+    },
+    password: {
+        type: String,
+        required: true
+    },
+    sclassName: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'sclass',
+        required: true,
+    },
+    school: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'admin',
+        required: true,
+    },
+    role: {
+        type: String,
+        default: "Student"
+    },
+    examResult: [
+        {
+            subName: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'subject',
+            },
+            marksObtained: {
+                type: Number,
+                default: 0
+            }
+        }
+    ],
+    attendance: [{
+        date: {
+            type: Date,
+            required: true
+        },
+        status: {
+            type: String,
+            enum: ['Present', 'Absent'],
+            required: true
+        },
+        subName: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'subject',
+            required: true
+        }
+    }]
 });
+
+
+
 
 
 

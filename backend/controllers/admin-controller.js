@@ -7,6 +7,7 @@ const Subject = require('../models/subjectSchema.js');
 const Notice = require('../models/noticeSchema.js');
 const Complain = require('../models/complainSchema.js');
 
+
 // const adminRegister = async (req, res) => {
 //     try {
 //         const salt = await bcrypt.genSalt(10);
@@ -149,4 +150,78 @@ const getAdminDetail = async (req, res) => {
 
 // module.exports = { adminRegister, adminLogIn, getAdminDetail, deleteAdmin, updateAdmin };
 
-module.exports = { adminRegister, adminLogIn, getAdminDetail };
+//newwww 
+
+//&&&&&&&&&&&&*(*&^)
+
+const uploadStudents = async (req, res) => {
+  try {
+    const { students } = req.body; // Array of students from the frontend
+
+    if (!students || students.length === 0) {
+      return res
+        .status(400)
+        .json({ success: false, message: "No students data provided" });
+    }
+
+    // Validate and process students
+    const processedStudents = [];
+    for (let studentData of students) {
+      const { Name, RollNumber, Password, Class } = studentData;
+
+      // Check if all required fields are present
+      if (!Name || !RollNumber || !Password || !Class) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Missing required student data" });
+      }
+
+      // Check if the class exists
+      const sclass = await Sclass.findOne({ name: Class });
+      if (!sclass) {
+        return res
+          .status(404)
+          .json({ success: false, message: `Class ${Class} not found` });
+      }
+
+      // Check if the student already exists
+      const existingStudent = await Student.findOne({
+        rollNum: RollNumber,
+        school: req.user._id,
+      });
+      if (existingStudent) {
+        return res
+          .status(400)
+          .json({
+            success: false,
+            message: `Student with roll number ${RollNumber} already exists`,
+          });
+      }
+
+      // Create a new student document
+      const newStudent = new Student({
+        name: Name,
+        rollNum: RollNumber,
+        password: Password,
+        sclassName: sclass._id,
+        school: req.user._id, // Assume current logged-in user is the admin
+      });
+
+      // Save the student
+      await newStudent.save();
+      processedStudents.push(newStudent);
+    }
+
+    return res.status(201).json({
+      success: true,
+      message: `${processedStudents.length} students uploaded successfully`,
+      students: processedStudents,
+    });
+  } catch (error) {
+    console.error("Error uploading students:", error);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+
+module.exports = { adminRegister, adminLogIn, getAdminDetail,uploadStudents};

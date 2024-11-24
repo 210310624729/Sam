@@ -3,11 +3,11 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const app = express();
+const bodyParser = require("body-parser");
 const Routes = require("./routes/route.js");
 dotenv.config();
 
 const PORT = process.env.PORT || 6234;
-
 
 // CORS configuration
 const corsOptions = {
@@ -20,6 +20,7 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(express.json({ limit: "10mb" }));
+app.use(bodyParser.json());
 
 mongoose
   .connect(process.env.MONGO_URL)
@@ -29,7 +30,7 @@ mongoose
 app.use("/", Routes);
 
 // Test an OPTIONS route explicitly if needed
-app.options("/AdminReg", cors(corsOptions));  // Handle OPTIONS preflight
+app.options("/AdminReg", cors(corsOptions)); // Handle OPTIONS preflight
 
 app.listen(PORT, () => {
   console.log(`✅ Server started at port no. ${PORT}`);

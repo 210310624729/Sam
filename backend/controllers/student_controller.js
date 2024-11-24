@@ -143,76 +143,76 @@ const updateStudent = async (req, res) => {
     }
 }
 
-// const updateExamResult = async (req, res) => {
+const updateExamResult = async (req, res) => {
 
-//     const { subName, marksObtained } = req.body;
+    const { subName, marksObtained } = req.body;
 
-//     try {
-//         const student = await Student.findById(req.params.id);
+    try {
+        const student = await Student.findById(req.params.id);
 
-//         if (!student) {
-//             return res.send({ message: 'Student not found' });
-//         }
+        if (!student) {
+            return res.send({ message: 'Student not found' });
+        }
 
-//         const existingResult = student.examResult.find(
-//             (result) => result.subName.toString() === subName
-//         );
+        const existingResult = student.examResult.find(
+            (result) => result.subName.toString() === subName
+        );
 
-//         if (existingResult) {
-//             existingResult.marksObtained = marksObtained;
-//         } else {
-//             student.examResult.push({ subName, marksObtained });
-//         }
+        if (existingResult) {
+            existingResult.marksObtained = marksObtained;
+        } else {
+            student.examResult.push({ subName, marksObtained });
+        }
 
-//         const result = await student.save();
-//         return res.send(result);
-//     } catch (error) {
-//         res.status(500).json(error);
-//     }
-// };
+        const result = await student.save();
+        return res.send(result);
+    } catch (error) {
+        res.status(500).json(error);
+    }
+};
 
 //new marks schema controller 
 
-const updateExamResult = async (req, res) => {
-  const { subName, examType, examName, percentage } = req.body;
+// const updateExamResult = async (req, res) => {
+//   const { subName, examType, examName, percentage } = req.body;
 
-  try {
-    const student = await Student.findById(req.params.id);
+//   try {
+//     const student = await Student.findById(req.params.id);
 
-    if (!student) {
-      return res.status(404).send({ message: "Student not found" });
-    }
+//     if (!student) {
+//       return res.status(404).send({ message: "Student not found" });
+//     }
 
-    // Find the exam result entry for the specified subject
-    let existingResult = student.examResult.find(
-      (result) => result.subName.toString() === subName
-    );
+//     // Find the exam result entry for the specified subject
+//     let existingResult = student.examResult.find(
+//       (result) => result.subName.toString() === subName
+//     );
 
-    // If no entry exists for the subject, create a new one
-    if (!existingResult) {
-      existingResult = { subName, internalMarks: {}, externalMarks: {} };
-      student.examResult.push(existingResult);
-    }
+//     // If no entry exists for the subject, create a new one
+//     if (!existingResult) {
+//       existingResult = { subName, internalMarks: {}, externalMarks: {} };
+//       student.examResult.push(existingResult);
+//     }
 
-    // Update either internal or external marks based on `examType`
-    if (examType === "internal") {
-      existingResult.internalMarks.set(examName, percentage);
-    } else if (examType === "external") {
-      existingResult.externalMarks.set(examName, percentage);
-    } else {
-      return res.status(400).send({ message: "Invalid exam type" });
-    }
+//     // Update either internal or external marks based on `examType`
+//     if (examType === "internal") {
+//       existingResult.internalMarks.set(examName, percentage);
+//     } else if (examType === "external") {
+//       existingResult.externalMarks.set(examName, percentage);
+//     } else {
+//       return res.status(400).send({ message: "Invalid exam type" });
+//     }
 
-    // Save the updated student document
-    const result = await student.save();
-    return res.status(200).send(result);
-  } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .json({ error: "An error occurred while updating the exam result" });
-  }
-};
+//     // Save the updated student document
+//     const result = await student.save();
+//     return res.status(200).send(result);
+//   } catch (error) {
+//     console.error(error);
+//     res
+//       .status(500)
+//       .json({ error: "An error occurred while updating the exam result" });
+//   }
+// };
 
 
 const studentAttendance = async (req, res) => {
@@ -315,6 +315,38 @@ const removeStudentAttendance = async (req, res) => {
         res.status(500).json(error);
     }
 };
+//new 
+
+// In your studentController.js file
+
+const getStudentAttendance = async (req, res) => {
+    try {
+        const student = await Student.findById(req.params.id).populate('attendance.subName'); // Populate subject name
+
+        if (!student) {
+            return res.status(404).send({ message: 'Student not found' });
+        }
+
+        // Aggregate attendance data (count Present and Absent)
+        const attendanceCount = student.attendance.reduce(
+            (acc, curr) => {
+                if (curr.status === 'Present') {
+                    acc.present++;
+                } else if (curr.status === 'Absent') {
+                    acc.absent++;
+                }
+                return acc;
+            },
+            { present: 0, absent: 0 }
+        );
+
+        return res.status(200).json(attendanceCount); // Send the aggregated data
+    } catch (error) {
+        return res.status(500).json({ message: "Error fetching attendance data", error });
+    }
+};
+
+module.exports = { getStudentAttendance };
 
 
 module.exports = {
@@ -333,4 +365,5 @@ module.exports = {
     clearAllStudentsAttendance,
     removeStudentAttendanceBySubject,
     removeStudentAttendance,
+    getStudentAttendance,
 };

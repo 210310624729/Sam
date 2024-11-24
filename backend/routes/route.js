@@ -1,4 +1,5 @@
 const router = require("express").Router();
+const Student = require("../models/studentSchema.js"); 
 
 // const { adminRegister, adminLogIn, deleteAdmin, getAdminDetail, updateAdmin } = require('../controllers/admin-controller.js');
 
@@ -6,6 +7,7 @@ const {
   adminRegister,
   adminLogIn,
   getAdminDetail,
+  uploadStudents,
 } = require("../controllers/admin-controller.js");
 
 const {
@@ -42,6 +44,7 @@ const {
   clearAllStudentsAttendance,
   removeStudentAttendanceBySubject,
   removeStudentAttendance,
+  getStudentAttendance,
 } = require("../controllers/student_controller.js");
 const {
   subjectCreate,
@@ -105,6 +108,8 @@ router.put("/RemoveAllStudentsAtten/:id", clearAllStudentsAttendance);
 
 router.put("/RemoveStudentSubAtten/:id", removeStudentAttendanceBySubject);
 router.put("/RemoveStudentAtten/:id", removeStudentAttendance);
+router.get("/attendance/:id", getStudentAttendance);
+
 
 // Teacher
 
@@ -164,4 +169,7 @@ router.delete("/Subject/:id", deleteSubject);
 router.delete("/Subjects/:id", deleteSubjects);
 router.delete("/SubjectsClass/:id", deleteSubjectsByClass);
 
+//newly added 
+
+router.post("/upload-students", uploadStudents);
 module.exports = router;
