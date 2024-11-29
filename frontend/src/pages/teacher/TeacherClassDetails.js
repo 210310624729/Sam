@@ -7,6 +7,7 @@ import { Paper, Box, Typography, ButtonGroup, Button, Popper, Grow, ClickAwayLis
 import { BlackButton, BlueButton} from "../../components/buttonStyles";
 import TableTemplate from "../../components/TableTemplate";
 import { KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
+import { updateStudentFields } from "../../redux/studentRelated/studentHandle";
 
 const TeacherClassDetails = () => {
     const navigate = useNavigate()
@@ -100,9 +101,18 @@ const TeacherClassDetails = () => {
             }
         };
 
+        const fields = {
+          subName: subjectID,
+          status: "Present",
+          date: Date.now(),
+        };
         const handleAttendance = () => {
-            // console.log("student id: ", row);
-            navigate(`/Teacher/class/student/attendance/${row.id}/${subjectID}`)
+            // navigate(`/Teacher/class/student/attendance/${row.id}/${subjectID}`)
+
+              dispatch(
+                updateStudentFields(row.id, fields, "StudentAttendance")
+              );
+              setPresentStud(true);
         }
         const handleMarks = () => {
             navigate(`/Teacher/class/student/marks/${row.id}/${subjectID}`)
@@ -216,7 +226,7 @@ const TeacherClassDetails = () => {
                             {Array.isArray(sclassStudents) && sclassStudents.length > 0 &&
                                 <TableTemplate buttonHaver={StudentsButtonHaver} columns={studentColumns} rows={studentRows} />
                             }
-                        <button onClick={handleTakeAttendance}>Take Attendance</button>
+                        <button onClick={handleTakeAttendance}>Start Attendance</button>
                         <button onClick={handleViewAttendance}>View Attendance</button>
                         </Paper>
                     )}
