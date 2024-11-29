@@ -2,6 +2,8 @@ const bcrypt = require('bcrypt');
 const Student = require('../models/studentSchema.js');
 const Subject = require('../models/subjectSchema.js');
 const Attendance = require("../models/studentSchema.js");
+const { default: mongoose } = require('mongoose');
+const Teacher = require('../models/teacherSchema.js');
 
 const studentRegister = async (req, res) => {
     try {
@@ -353,56 +355,56 @@ const getStudentAttendance = async (req, res) => {
 
 // Calculate attendance dynamically based on location
 const getAttendanceWithLocation = async (req, res) => {
-  const { latitude, longitude } = req.body;
+    const { latitude, longitude } = req.body;
 
-  if (!latitude || !longitude) {
-    return res.status(400).json({ error: "Latitude and longitude are required." });
-  }
+    if (!latitude || !longitude) {
+        return res.status(400).json({ error: "Latitude and longitude are required." });
+    }
 
-  try {
-    // Fetch all attendance records
-    const attendanceRecords = await Attendance.find();
+    try {
+        // Fetch all attendance records
+        const attendanceRecords = await Attendance.find();
 
-    // Example dynamic logic: calculate presence/absence based on a distance threshold
-    const thresholdDistance = 5; // kilometers
-    const userLocation = { latitude, longitude };
+        // Example dynamic logic: calculate presence/absence based on a distance threshold
+        const thresholdDistance = 5; // kilometers
+        const userLocation = { latitude, longitude };
 
-    // Sample logic to determine "Present" or "Absent" (replace with actual logic)
-    const calculateDistance = (lat1, lon1, lat2, lon2) => {
-      const toRad = (value) => (value * Math.PI) / 180;
-      const R = 6371; // Earth's radius in kilometers
-      const dLat = toRad(lat2 - lat1);
-      const dLon = toRad(lon2 - lon1);
-      const a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(toRad(lat1)) *
-          Math.cos(toRad(lat2)) *
-          Math.sin(dLon / 2) *
-          Math.sin(dLon / 2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      return R * c;
-    };
+        // Sample logic to determine "Present" or "Absent" (replace with actual logic)
+        const calculateDistance = (lat1, lon1, lat2, lon2) => {
+            const toRad = (value) => (value * Math.PI) / 180;
+            const R = 6371; // Earth's radius in kilometers
+            const dLat = toRad(lat2 - lat1);
+            const dLon = toRad(lon2 - lon1);
+            const a =
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(toRad(lat1)) *
+                Math.cos(toRad(lat2)) *
+                Math.sin(dLon / 2) *
+                Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c;
+        };
 
-    const updatedAttendance = attendanceRecords.map((record) => {
-      const sampleClassLocation = { latitude: 23.8103, longitude: 23.4125 }; // Replace with actual class location
-      const distance = calculateDistance(
-        userLocation.latitude,
-        userLocation.longitude,
-        sampleClassLocation.latitude,
-        sampleClassLocation.longitude
-      );
+        const updatedAttendance = attendanceRecords.map((record) => {
+            const sampleClassLocation = { latitude: 23.8103, longitude: 23.4125 }; // Replace with actual class location
+            const distance = calculateDistance(
+                userLocation.latitude,
+                userLocation.longitude,
+                sampleClassLocation.latitude,
+                sampleClassLocation.longitude
+            );
 
-      const isPresent = distance <= thresholdDistance;
-      return {
-        ...record._doc,
-        status: isPresent ? "Present" : "Absent",
-      };
-    });
+            const isPresent = distance <= thresholdDistance;
+            return {
+                ...record._doc,
+                status: isPresent ? "Present" : "Absent",
+            };
+        });
 
-    res.json(updatedAttendance);
-  } catch (error) {
-    res.status(500).json({ error: "Error calculating attendance with location." });
-  }
+        res.json(updatedAttendance);
+    } catch (error) {
+        res.status(500).json({ error: "Error calculating attendance with location." });
+    }
 };
 
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -411,92 +413,101 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
     const dLat = toRad(lat2 - lat1);
     const dLon = toRad(lon2 - lon1);
     const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(toRad(lat1)) *
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRad(lat1)) *
         Math.cos(toRad(lat2)) *
         Math.sin(dLon / 2) *
         Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;  // Distance in kilometers
-  };
-  
-  // Function to update student attendance based on location
-  const updateAttendanceWithLocation = async (studentId, subName, date, latitude, longitude) => {
+};
+
+// Function to update student attendance based on location
+const updateAttendanceWithLocation = async (studentId, subName, date, latitude, longitude) => {
     try {
-      // Fetch student by ID
-      const student = await Student.findById(studentId);
-      if (!student) {
-        return { message: 'Student not found' };
-      }
-  
-      // Fetch subject by ID
-      const subject = await Subject.findById(subName);
-      if (!subject) {
-        return { message: 'Subject not found' };
-      }
-  
-      // Check if attendance already exists for the given date and subject
-      const existingAttendance = student.attendance.find(
-        (a) =>
-          a.date.toDateString() === new Date(date).toDateString() &&
-          a.subName.toString() === subName
-      );
-  
-      // Default status, will be updated based on distance
-      let status = "Absent"; // Assume absent by default
-  
-      // Calculate distance between student location and class location
-      const thresholdDistance = 5; // kilometers (threshold distance)
-      const sampleClassLocation = { latitude: 23, longitude: 23}; // Example class location (replace with actual class location)
-  
-      const distance = calculateDistance(latitude, longitude, sampleClassLocation.latitude, sampleClassLocation.longitude);
-  
-      // If the student is within the threshold distance, mark as present
-      if (distance <= thresholdDistance) {
-        status = 'Present';
-      }
-  
-      // If attendance already exists, update the status
-      if (existingAttendance) {
-        existingAttendance.status = status;
-      } else {
-        // If no previous attendance, add a new attendance record
-        student.attendance.push({ date, status, subName });
-      }
-  
-      // Save the updated student record
-      await student.save();
-  
-      return { message: 'Attendance updated successfully', status };
-  
+        // Fetch student by ID
+        const student = await Student.findById(studentId);
+
+        if (!student) {
+            return { message: 'Student not found' };
+        }
+
+        // Fetch subject by ID
+        const subjects = await Subject.find({ subName }) .populate({
+            path: 'teacher',
+            select: 'location' 
+          });
+
+          const subject = subjects[0];
+        console.log("subjects: ", subject);
+        if (!subject) {
+            return { message: 'Subject not found' };
+        }
+
+        // Check if attendance already exists for the given date and subject
+        const existingAttendance = student.attendance.find(
+            (a) =>
+                new Date(a.date).toDateString() === new Date(date).toDateString() &&
+                a.subName === subject._id
+        );
+
+        // Default status, will be updated based on distance
+        let status = "Absent"; // Assume absent by default
+
+        // Calculate distance between student location and class location
+        const thresholdDistance = 5; // kilometers (threshold distance)
+        // const sampleClassLocation = { latitude: 23, longitude: 23 }; // Example class location (replace with actual class location)
+        const teacherLocation = subject.teacher.location;
+
+        const distance = calculateDistance(latitude, longitude, teacherLocation.latitude, teacherLocation.longitude);
+
+        // If the student is within the threshold distance, mark as present
+        if (distance <= thresholdDistance) {
+            status = 'Present';
+        }
+
+        // If attendance already exists, update the status
+        if (existingAttendance) {
+            existingAttendance.status = status;
+        } else {
+            console.log(date, status, subject._id);
+            // If no previous attendance, add a new attendance record
+            student.attendance.push({ date, status, subName: subject._id });
+        }
+
+        // Save the updated student record
+        await student.save();
+
+        return { message: 'Attendance updated successfully', status };
+
     } catch (error) {
-      console.error("Error updating student attendance:", error);
-      throw new Error("Error updating attendance");
+        console.error("Error updating student attendance:", error);
+        throw new Error("Error updating attendance");
     }
-  };
-  
-  // Main function to handle student attendance update
-  const studentAttendancenew = async (req, res) => {
+};
+
+// Main function to handle student attendance update
+const studentAttendancenew = async (req, res) => {
     const { subName, date, latitude, longitude } = req.body;
     const studentId = req.params.id; // Student ID should come from the route parameter
-  
+
     try {
-      const result = await updateAttendanceWithLocation(studentId, subName, date, latitude, longitude);
-  
-      // If there is an error or failure in the update, return the message
-      if (result.message !== 'Attendance updated successfully') {
-        return res.status(400).json({ message: result.message });
-      }
-  
-      // If attendance is updated successfully, return the result
-      return res.json({ message: result.message, status: result.status });
-  
+        const result = await updateAttendanceWithLocation(studentId, subName, date, latitude, longitude);
+
+        // If there is an error or failure in the update, return the message
+        if (result.message !== 'Attendance updated successfully') {
+            return res.status(400).json({ message: result.message });
+        }
+
+        // If attendance is updated successfully, return the result
+        return res.json({ message: result.message, status: result.status });
+
     } catch (error) {
-      console.error("Error handling attendance:", error);
-      res.status(500).json({ error: 'Failed to update attendance' });
+        console.error("Error handling attendance:", error);
+        res.status(500).json({ error: 'Failed to update attendance' });
     }
-  };
-  
+};
+
 
 
 
@@ -506,7 +517,6 @@ module.exports = { getStudentAttendance };
 module.exports = {
     studentAttendancenew,
     getAttendanceWithLocation,
-    //old ones
     studentRegister,
     studentLogIn,
     getStudents,

@@ -1176,194 +1176,72 @@
 
 //new 7
 
-// import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 
-// const Attendence = ({ studentId }) => {
-//   const [studentDetails, setStudentDetails] = useState(null); // To store student data
-//   const [subjects, setSubjects] = useState([]); // To store subjects
-//   const [selectedSubjectId, setSelectedSubjectId] = useState(''); // To store selected subject
-//   const [attendanceStatus, setAttendanceStatus] = useState('Present'); // Attendance status (Present/Absent)
-//   const [date, setDate] = useState(new Date().toISOString().split('T')[0]); // Default to today's date
-//   const [location, setLocation] = useState({ latitude: 0, longitude: 0 }); // To store geolocation data
-//   const [loading, setLoading] = useState(true); // To handle loading state
-//   const [error, setError] = useState(null); // To handle errors
+import { getUserDetails } from "../../redux/userRelated/userHandle";
+import { useDispatch, useSelector } from "react-redux";
 
-//   // Fetch student details and subjects
-//   useEffect(() => {
-//     const fetchStudentDetails = async () => {
-//       try {
-//         // Fetch student details/student/:studentId/subjects
-//         console.log('Student ID:', studentId);
-//         const response = await fetch(`http://localhost:2003/student/${studentId}/subjects`);
-//         const data = await response.json();
+const Attendence = ({ studentId }) => {
 
-//         if (data) {
-//           setStudentDetails(data);
-//           setSubjects(data.subjects || []); // Assuming subjects are part of the student data
-//         }
-//       } catch (err) {
-//         setError('Failed to fetch student details');
-//         console.error('Error fetching student details:', err);
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
+  const { userDetails, currentUser, response } = useSelector(
+    (state) => state.user
+  );
 
-//     fetchStudentDetails();
-//   }, [studentId]);
+  console.log(userDetails, currentUser)
 
-//   // Handle subject selection
-//   const handleSubjectChange = (event) => {
-//     setSelectedSubjectId(event.target.value);
-//   };
+  studentId = currentUser._id;
 
-//   // Handle form submission to update attendance
-//   const handleSubmit = async (event) => {
-//     event.preventDefault();
+  const [studentDetails, setStudentDetails] = useState(null); // To store student data
+  const [subjects, setSubjects] = useState([]); // To store subjects
+  const [selectedSubjectId, setSelectedSubjectId] = useState(''); // To store selected subject
+  const [attendanceStatus, setAttendanceStatus] = useState('Present'); // Attendance status (Present/Absent)
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]); // Default to today's date
+  const [location, setLocation] = useState({ latitude: 0, longitude: 0 }); // To store geolocation data
+  const [loading, setLoading] = useState(true); // To handle loading state
+  const [error, setError] = useState(null); // To handle errors
 
-//     // First check for geolocation permission and get the teacher's location
-//     if (navigator.geolocation) {
-//       navigator.geolocation.getCurrentPosition(
-//         (position) => {
-//           setLocation({
-//             latitude: position.coords.latitude,
-//             longitude: position.coords.longitude,
-//           });
-
-//           // Send attendance data along with geolocation
-//           fetch(`http://localhost:2003/atloc/${studentId}`, {
-//             method: 'POST',
-//             headers: {
-//               'Content-Type': 'application/json',
-//             },
-//             body: JSON.stringify({
-//               subName: selectedSubjectId, // Subject's ObjectId
-//               status: attendanceStatus,
-//               date: date,
-//               latitude: position.coords.latitude,
-//               longitude: position.coords.longitude,
-//             }),
-//           })
-//             .then((response) => response.json())
-//             .then((data) => {
-//               console.log('Attendance updated:', data);
-//               alert('Attendance updated successfully');
-//             })
-//             .catch((error) => {
-//               console.error('Error updating attendance:', error);
-//               alert('Error updating attendance');
-//             });
-//         },
-//         (error) => {
-//           console.error('Error fetching geolocation:', error);
-//           alert('Geolocation access denied or error occurred');
-//         }
-//       );
-//     }
-//   };
-
-//   if (loading) {
-//     return <div>Loading...</div>;
-//   }
-
-//   if (error) {
-//     return <div>{error}</div>;
-//   }
-
-//   return (
-//     <div>
-//       <h2>Update Attendance</h2>
-//       {/* Display Student Info */}
-//       {studentDetails && (
-//         <div>
-//           <h3>{studentDetails.name}</h3>
-//           <p>Roll Number: {studentDetails.rollNum}</p>
-//           <p>Class: {studentDetails.sclassName?.className || 'N/A'}</p>
-//         </div>
-//       )}
-      
-//       {/* Attendance Form */}
-//       <form onSubmit={handleSubmit}>
-//         <div>
-//           <label htmlFor="subject">Subject: </label>
-//           <select
-//             id="subject"
-//             value={selectedSubjectId}
-//             onChange={handleSubjectChange}
-//           >
-//             <option value="">Select a Subject</option>
-//             {Array.isArray(subjects) && subjects.length > 0 ? (
-//               subjects.map((subject) => (
-//                 <option key={subject.subId} value={subject.subId}>
-//                   {subject.subName} {/* Display subject name */}
-//                 </option>
-//               ))
-//             ) : (
-//               <option value="">No subjects available</option>
-//             )}
-//           </select>
-//         </div>
-
-//         <div>
-//           <label htmlFor="status">Attendance Status: </label>
-//           <select
-//             id="status"
-//             value={attendanceStatus}
-//             onChange={(e) => setAttendanceStatus(e.target.value)}
-//           >
-//             <option value="Present">Present</option>
-//             <option value="Absent">Absent</option>
-//           </select>
-//         </div>
-
-//         <div>
-//           <button type="submit">Update Attendance</button>
-//         </div>
-//       </form>
-//     </div>
-//   );
-// };
-
-// export default Attendence;
-
-
-// new 8 
-import React, { useState, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { getSubjectList } from "../../redux/sclassRelated/sclassHandle"; // Fetch subjects
-import { getUserDetails } from "../../redux/userRelated/userHandle"; // Fetch user details
-
-const Attendance = ({ studentId }) => {
-  const dispatch = useDispatch();
-
-  // Redux states
-  const { userDetails } = useSelector((state) => state.user);
-  const { subjectList } = useSelector((state) => state.sclass);
-
-  // Local states
-  const [selectedSubjectId, setSelectedSubjectId] = useState(""); // Selected subject
-  const [attendanceStatus, setAttendanceStatus] = useState("Present"); // Attendance status
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]); // Default to today's date
-  const [location, setLocation] = useState({ latitude: 0, longitude: 0 }); // Geolocation
-
-  // Fetch user and subject details on mount
+  // Fetch student details and subjects
   useEffect(() => {
-    if (studentId) {
-      dispatch(getUserDetails(studentId)); // Fetch user details
-      dispatch(getSubjectList()); // Fetch subject list
-    }
-  }, [dispatch, studentId]);
+    const fetchStudentDetails = async () => {
+      try {
+        // Fetch student details/student/:studentId/subjects
+        console.log('Student ID:', studentId);
+        const response = await fetch(`http://localhost:2003/student/${studentId}/subjects`);
+        const data = await response.json();
+
+       
+        console.log("subjects", data);
+        if (data) {
+          setStudentDetails(data);
+          const fetchedSubjects = await Promise.all(
+            data.map(async (sub) => {
+              const response = await fetch(`http://localhost:2003/Subject/${sub.subId}`);
+              return await response.json(); // Parse the JSON response
+            })
+          );
+          setSubjects(fetchedSubjects || []); // Assuming subjects are part of the student data
+        }
+      } catch (err) {
+        setError('Failed to fetch student details');
+        console.error('Error fetching student details:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStudentDetails();
+  }, [studentId]);
 
   // Handle subject selection
   const handleSubjectChange = (event) => {
     setSelectedSubjectId(event.target.value);
   };
 
-  // Handle form submission
+  // Handle form submission to update attendance
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    // Check for geolocation access
+    // First check for geolocation permission and get the teacher's location
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -1371,52 +1249,59 @@ const Attendance = ({ studentId }) => {
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
           });
-
-          // Send attendance data to the backend
+console.log("user data: ", selectedSubjectId, attendanceStatus, date, position.coords.latitude, position.coords.longitude)
+          // Send attendance data along with geolocation
           fetch(`http://localhost:2003/atloc/${studentId}`, {
-            method: "POST",
+            method: 'POST',
             headers: {
-              "Content-Type": "application/json",
+              'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              subjectId: selectedSubjectId,
+              subName: selectedSubjectId, // Subject's ObjectId
               status: attendanceStatus,
-              date,
+              date: date,
               latitude: position.coords.latitude,
               longitude: position.coords.longitude,
             }),
           })
             .then((response) => response.json())
             .then((data) => {
-              console.log("Attendance updated successfully:", data);
-              alert("Attendance updated successfully!");
+              console.log('Attendance updated:', data);
+              alert('Attendance updated successfully');
             })
             .catch((error) => {
-              console.error("Error updating attendance:", error);
-              alert("Failed to update attendance!");
+              console.error('Error updating attendance:', error);
+              alert('Error updating attendance');
             });
         },
         (error) => {
-          alert("Geolocation access denied or error occurred");
-          console.error("Geolocation error:", error);
+          console.error('Error fetching geolocation:', error);
+          alert('Geolocation access denied or error occurred');
         }
       );
     }
   };
 
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>{error}</div>;
+  }
+
   return (
     <div>
       <h2>Update Attendance</h2>
-
-      {/* Student Info */}
-      {userDetails && (
+      {/* Display Student Info */}
+      {studentDetails && (
         <div>
-          <h3>{userDetails.name}</h3>
-          <p>Roll Number: {userDetails.rollNum}</p>
-          <p>Class: {userDetails.sclassName?.className || "N/A"}</p>
+          <h3>{studentDetails.name}</h3>
+          <p>Roll Number: {studentDetails.rollNum}</p>
+          <p>Class: {studentDetails.sclassName?.className || 'N/A'}</p>
         </div>
       )}
-
+      
       {/* Attendance Form */}
       <form onSubmit={handleSubmit}>
         <div>
@@ -1427,11 +1312,15 @@ const Attendance = ({ studentId }) => {
             onChange={handleSubjectChange}
           >
             <option value="">Select a Subject</option>
-            {subjectList?.map((subject) => (
-              <option key={subject.subId} value={subject.subId}>
-                {subject.subName}
-              </option>
-            ))}
+            {Array.isArray(subjects) && subjects.length > 0 ? (
+              subjects.map((subject) => (
+                <option key={subject.subId} value={subject.subId}>
+                  {subject.subName} {/* Display subject name */}
+                </option>
+              ))
+            ) : (
+              <option value="">No subjects available</option>
+            )}
           </select>
         </div>
 
@@ -1448,19 +1337,150 @@ const Attendance = ({ studentId }) => {
         </div>
 
         <div>
-          <label htmlFor="date">Date: </label>
-          <input
-            type="date"
-            id="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-          />
+          <button type="submit">Update Attendance</button>
         </div>
-
-        <button type="submit">Update Attendance</button>
       </form>
     </div>
   );
 };
 
-export default Attendance;
+export default Attendence;
+
+
+// new 8 
+// import React, { useState, useEffect } from "react";
+// import { useSelector, useDispatch } from "react-redux";
+// import { getSubjectList } from "../../redux/sclassRelated/sclassHandle"; // Fetch subjects
+// import { getUserDetails } from "../../redux/userRelated/userHandle"; // Fetch user details
+
+// const Attendance = ({ studentId }) => {
+//   const dispatch = useDispatch();
+
+//   // Redux states
+//   const { userDetails } = useSelector((state) => state.user);
+//   const { subjectList } = useSelector((state) => state.sclass);
+
+//   // Local states
+//   const [selectedSubjectId, setSelectedSubjectId] = useState(""); // Selected subject
+//   const [attendanceStatus, setAttendanceStatus] = useState("Present"); // Attendance status
+//   const [date, setDate] = useState(new Date().toISOString().split("T")[0]); // Default to today's date
+//   const [location, setLocation] = useState({ latitude: 0, longitude: 0 }); // Geolocation
+
+//   // Fetch user and subject details on mount
+//   useEffect(() => {
+//     if (studentId) {
+//       dispatch(getUserDetails(studentId)); // Fetch user details
+//       dispatch(getSubjectList()); // Fetch subject list
+//     }
+//   }, [dispatch, studentId]);
+
+//   // Handle subject selection
+//   const handleSubjectChange = (event) => {
+//     setSelectedSubjectId(event.target.value);
+//   };
+
+//   // Handle form submission
+//   const handleSubmit = async (event) => {
+//     event.preventDefault();
+
+//     // Check for geolocation access
+//     if (navigator.geolocation) {
+//       navigator.geolocation.getCurrentPosition(
+//         (position) => {
+//           setLocation({
+//             latitude: position.coords.latitude,
+//             longitude: position.coords.longitude,
+//           });
+
+//           // Send attendance data to the backend
+//           fetch(`http://localhost:2003/atloc/${studentId}`, {
+//             method: "POST",
+//             headers: {
+//               "Content-Type": "application/json",
+//             },
+//             body: JSON.stringify({
+//               subjectId: selectedSubjectId,
+//               status: attendanceStatus,
+//               date,
+//               latitude: position.coords.latitude,
+//               longitude: position.coords.longitude,
+//             }),
+//           })
+//             .then((response) => response.json())
+//             .then((data) => {
+//               console.log("Attendance updated successfully:", data);
+//               alert("Attendance updated successfully!");
+//             })
+//             .catch((error) => {
+//               console.error("Error updating attendance:", error);
+//               alert("Failed to update attendance!");
+//             });
+//         },
+//         (error) => {
+//           alert("Geolocation access denied or error occurred");
+//           console.error("Geolocation error:", error);
+//         }
+//       );
+//     }
+//   };
+
+//   return (
+//     <div>
+//       <h2>Update Attendance</h2>
+
+//       {/* Student Info */}
+//       {userDetails && (
+//         <div>
+//           <h3>{userDetails.name}</h3>
+//           <p>Roll Number: {userDetails.rollNum}</p>
+//           <p>Class: {userDetails.sclassName?.className || "N/A"}</p>
+//         </div>
+//       )}
+
+//       {/* Attendance Form */}
+//       <form onSubmit={handleSubmit}>
+//         <div>
+//           <label htmlFor="subject">Subject: </label>
+//           <select
+//             id="subject"
+//             value={selectedSubjectId}
+//             onChange={handleSubjectChange}
+//           >
+//             <option value="">Select a Subject</option>
+//             {subjectList?.map((subject) => (
+//               <option key={subject.subId} value={subject.subId}>
+//                 {subject.subName}
+//               </option>
+//             ))}
+//           </select>
+//         </div>
+
+//         <div>
+//           <label htmlFor="status">Attendance Status: </label>
+//           <select
+//             id="status"
+//             value={attendanceStatus}
+//             onChange={(e) => setAttendanceStatus(e.target.value)}
+//           >
+//             <option value="Present">Present</option>
+//             <option value="Absent">Absent</option>
+//           </select>
+//         </div>
+
+//         <div>
+//           <label htmlFor="date">Date: </label>
+//           <input
+//             type="date"
+//             id="date"
+//             value={date}
+//             onChange={(e) => setDate(e.target.value)}
+//           />
+//         </div>
+
+//         <button type="submit">Update Attendance</button>
+//       </form>
+//     </div>
+//   );
+// };
+
+// export default Attendance;
