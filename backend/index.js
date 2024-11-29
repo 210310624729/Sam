@@ -90,12 +90,9 @@ mongoose
 app.use("/", Routes);
 app.post("/atloc/:id", studentAttendancenew);
 
-//#@
 app.get('/student/:studentId/subjects', async (req, res) => {
   try {
       const studentId = req.params.studentId;
-
-      // Find the student by ID and populate the subject names in the examResult field
       const student = await Student.findById(studentId).populate('examResult.subName'); // Populate subjects
 
       if (!student) {
@@ -115,9 +112,33 @@ app.get('/student/:studentId/subjects', async (req, res) => {
   }
 });
 
+// Backend route to get students with attendance status "Present" for the current date
+// to fetch student who are present 
+
+app.get('/attendance/:classID/:subjectID', async (req, res) => {
+    try {
+        const { classID, subjectID } = req.params;
+        const currentDate = new Date().toISOString().split('T')[0]; 
+
+        const students = await Student.find({
+            sclassName: classID,
+            'attendance.date': { $gte: new Date(currentDate), $lt: new Date(currentDate + 'T23:59:59Z') },
+            'attendance.status': 'Present',
+            'attendance.subName': subjectID,
+        }).select('name rollNum');
+
+        res.json({ students });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error fetching attendance data', error });
+    }
+});
+
+
+
 
 // Test an OPTIONS route explicitly if needed
-app.options("/AdminReg", cors(corsOptions)); // Handle OPTIONS preflight
+app.options("/AdminReg", cors(corsOptions)); 
 
 app.listen(PORT, () => {
   console.log(`✅ Server started at port no. ${PORT}`);

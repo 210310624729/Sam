@@ -7,13 +7,12 @@ import { Paper, Box, Typography, ButtonGroup, Button, Popper, Grow, ClickAwayLis
 import { BlackButton, BlueButton} from "../../components/buttonStyles";
 import TableTemplate from "../../components/TableTemplate";
 import { KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
-// import io from 'socket.io-client';
 
-// const socket = io('http://localhost:2003');
 const TeacherClassDetails = () => {
     const navigate = useNavigate()
     const dispatch = useDispatch();
     const [teacherLocation, setTeacherLocation] = useState(null);
+    const [presentStud, setPresentStud] = useState(false);
 
     const handleTakeAttendance = () => {
         if (navigator.geolocation) {
@@ -45,6 +44,9 @@ const TeacherClassDetails = () => {
             console.error("Geolocation is not supported by this browser.");
         }
     };
+    const handleViewAttendance = () => {
+        setPresentStud(true);
+    }
     
 
     const { sclassStudents, loading, error, getresponse } = useSelector((state) => state.sclass);
@@ -55,7 +57,8 @@ const TeacherClassDetails = () => {
 
     useEffect(() => {
         dispatch(getClassStudents(classID));
-    }, [dispatch, classID])
+        setPresentStud(false);
+    }, [dispatch, classID, presentStud])
 
     if (error) {
         console.log(error)
@@ -64,15 +67,22 @@ const TeacherClassDetails = () => {
     const studentColumns = [
         { id: 'name', label: 'Name', minWidth: 170 },
         { id: 'rollNum', label: 'Roll Number', minWidth: 100 },
-    ]
-
+        { id: 'attendance', label: 'Attendance', minWidth: 100 }, // New column
+    ];
+    
+    const todayDate = new Date().toISOString().split('T')[0];
     const studentRows = sclassStudents.map((student) => {
+        const isPresent = student.attendance?.some((record) => {
+            const recordDate = new Date(record.date).toISOString().split('T')[0];
+            return recordDate === todayDate && record.subName === subjectID;
+        });
         return {
             name: student.name,
             rollNum: student.rollNum,
+            attendance: isPresent ? 'Present' : 'Absent',
             id: student._id,
         };
-    })
+    });
 
     const StudentsButtonHaver = ({ row }) => {
         const options = ['Take Attendance', 'Provide Marks'];
@@ -91,6 +101,7 @@ const TeacherClassDetails = () => {
         };
 
         const handleAttendance = () => {
+            // console.log("student id: ", row);
             navigate(`/Teacher/class/student/attendance/${row.id}/${subjectID}`)
         }
         const handleMarks = () => {
@@ -113,6 +124,8 @@ const TeacherClassDetails = () => {
 
             setOpen(false);
         };
+
+        
         return (
             <>
                 <BlueButton
@@ -204,6 +217,7 @@ const TeacherClassDetails = () => {
                                 <TableTemplate buttonHaver={StudentsButtonHaver} columns={studentColumns} rows={studentRows} />
                             }
                         <button onClick={handleTakeAttendance}>Take Attendance</button>
+                        <button onClick={handleViewAttendance}>View Attendance</button>
                         </Paper>
                     )}
                 </>

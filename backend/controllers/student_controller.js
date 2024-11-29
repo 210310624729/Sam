@@ -451,31 +451,23 @@ const updateAttendanceWithLocation = async (studentId, subName, date, latitude, 
                 a.subName === subject._id
         );
 
-        // Default status, will be updated based on distance
         let status = "Absent"; // Assume absent by default
 
-        // Calculate distance between student location and class location
         const thresholdDistance = 5; // kilometers (threshold distance)
-        // const sampleClassLocation = { latitude: 23, longitude: 23 }; // Example class location (replace with actual class location)
-        const teacherLocation = subject.teacher.location;
 
+        const teacherLocation = subject.teacher.location;
         const distance = calculateDistance(latitude, longitude, teacherLocation.latitude, teacherLocation.longitude);
 
-        // If the student is within the threshold distance, mark as present
         if (distance <= thresholdDistance) {
             status = 'Present';
         }
 
-        // If attendance already exists, update the status
         if (existingAttendance) {
             existingAttendance.status = status;
         } else {
-            console.log(date, status, subject._id);
-            // If no previous attendance, add a new attendance record
             student.attendance.push({ date, status, subName: subject._id });
         }
 
-        // Save the updated student record
         await student.save();
 
         return { message: 'Attendance updated successfully', status };
@@ -486,7 +478,6 @@ const updateAttendanceWithLocation = async (studentId, subName, date, latitude, 
     }
 };
 
-// Main function to handle student attendance update
 const studentAttendancenew = async (req, res) => {
     const { subName, date, latitude, longitude } = req.body;
     const studentId = req.params.id; // Student ID should come from the route parameter
@@ -494,12 +485,10 @@ const studentAttendancenew = async (req, res) => {
     try {
         const result = await updateAttendanceWithLocation(studentId, subName, date, latitude, longitude);
 
-        // If there is an error or failure in the update, return the message
         if (result.message !== 'Attendance updated successfully') {
             return res.status(400).json({ message: result.message });
         }
 
-        // If attendance is updated successfully, return the result
         return res.json({ message: result.message, status: result.status });
 
     } catch (error) {
