@@ -71,7 +71,7 @@ const PORT = process.env.PORT || 6234;
 
 // CORS configuration
 const corsOptions = {
-  origin: ["http://localhost:3000", "http://localhost:3001"], // Frontend domain
+  origin: [process.env.FRONTEND_URL1, process.env.FRONTEND_URL2],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allowed methods
   allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
   credentials: true, // Allow cookies or authorization headers
