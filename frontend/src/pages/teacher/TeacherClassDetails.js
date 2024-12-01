@@ -8,8 +8,6 @@ import { BlackButton, BlueButton} from "../../components/buttonStyles";
 import TableTemplate from "../../components/TableTemplate";
 import { KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
 import { updateStudentFields } from "../../redux/studentRelated/studentHandle";
-const dotenv = require("dotenv");
-dotenv.config();
 
 const TeacherClassDetails = () => {
     const navigate = useNavigate()

@@ -1180,8 +1180,7 @@ import React, { useState, useEffect } from 'react';
 
 import { getUserDetails } from "../../redux/userRelated/userHandle";
 import { useDispatch, useSelector } from "react-redux";
-const dotenv = require("dotenv");
-dotenv.config();
+
 
 const Attendence = ({ studentId }) => {
 

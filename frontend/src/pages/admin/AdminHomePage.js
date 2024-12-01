@@ -10,8 +10,7 @@ import Fees from "../../assets/img4.png";
 import styled from "styled-components";
 import CountUp from "react-countup";
 import { useSelector } from "react-redux";
-const dotenv = require("dotenv");
-dotenv.config();
+
 
 const AdminHomePage = () => {
   const { currentUser } = useSelector((state) => state.user);
