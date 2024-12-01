@@ -8,6 +8,8 @@ import { BlackButton, BlueButton} from "../../components/buttonStyles";
 import TableTemplate from "../../components/TableTemplate";
 import { KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
 import { updateStudentFields } from "../../redux/studentRelated/studentHandle";
+const dotenv = require("dotenv");
+dotenv.config();
 
 const TeacherClassDetails = () => {
     const navigate = useNavigate()
@@ -26,16 +28,25 @@ const TeacherClassDetails = () => {
                     const teacherId = currentUser._id; // assuming you have the teacher's ID in currentUser
     
                     // Send teacher's location to backend
-                    fetch('http://localhost:2003/api/teacher-location', {
-                        method: 'POST',
+                    fetch(
+                      `${process.env.REACT_APP_BASE_URL}/api/teacher-location`,
+                      {
+                        method: "POST",
                         headers: {
-                            'Content-Type': 'application/json',
+                          "Content-Type": "application/json",
                         },
-                        body: JSON.stringify({ latitude, longitude, teacherId }),
-                    })
-                    .then(response => response.json())
-                    .then(data => console.log(data.message))
-                    .catch(err => console.error('Error sending location:', err));
+                        body: JSON.stringify({
+                          latitude,
+                          longitude,
+                          teacherId,
+                        }),
+                      }
+                    )
+                      .then((response) => response.json())
+                      .then((data) => console.log(data.message))
+                      .catch((err) =>
+                        console.error("Error sending location:", err)
+                      );
                 },
                 (error) => {
                     console.error("Error getting teacher's location:", error.message);

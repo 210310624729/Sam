@@ -10,6 +10,8 @@ import Fees from "../../assets/img4.png";
 import styled from "styled-components";
 import CountUp from "react-countup";
 import { useSelector } from "react-redux";
+const dotenv = require("dotenv");
+dotenv.config();
 
 const AdminHomePage = () => {
   const { currentUser } = useSelector((state) => state.user);
@@ -53,7 +55,7 @@ const AdminHomePage = () => {
 
       // Send the parsed students data to the backend
       const response = await axios.post(
-        "http://localhost:2003/upload-students",
+        `${process.env.REACT_APP_BASE_URL}/upload-students`,
         { students: studentsData }
       );
 

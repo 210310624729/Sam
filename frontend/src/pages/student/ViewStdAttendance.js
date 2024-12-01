@@ -1180,6 +1180,8 @@ import React, { useState, useEffect } from 'react';
 
 import { getUserDetails } from "../../redux/userRelated/userHandle";
 import { useDispatch, useSelector } from "react-redux";
+const dotenv = require("dotenv");
+dotenv.config();
 
 const Attendence = ({ studentId }) => {
 
@@ -1206,7 +1208,9 @@ const Attendence = ({ studentId }) => {
       try {
         // Fetch student details/student/:studentId/subjects
         console.log('Student ID:', studentId);
-        const response = await fetch(`http://localhost:2003/student/${studentId}/subjects`);
+        const response = await fetch(
+          `${process.env.REACT_APP_BASE_URL}/student/${studentId}/subjects`
+        );
         const data = await response.json();
 
        
@@ -1215,7 +1219,9 @@ const Attendence = ({ studentId }) => {
           setStudentDetails(data);
           const fetchedSubjects = await Promise.all(
             data.map(async (sub) => {
-              const response = await fetch(`http://localhost:2003/Subject/${sub.subId}`);
+              const response = await fetch(
+                `${process.env.REACT_APP_BASE_URL}/Subject/${sub.subId}`
+              );
               return await response.json(); // Parse the JSON response
             })
           );
@@ -1251,10 +1257,10 @@ const Attendence = ({ studentId }) => {
           });
 console.log("user data: ", selectedSubjectId, attendanceStatus, date, position.coords.latitude, position.coords.longitude)
           // Send attendance data along with geolocation
-          fetch(`http://localhost:2003/atloc/${studentId}`, {
-            method: 'POST',
+          fetch(`${process.env.REACT_APP_BASE_URL}/atloc/${studentId}`, {
+            method: "POST",
             headers: {
-              'Content-Type': 'application/json',
+              "Content-Type": "application/json",
             },
             body: JSON.stringify({
               subName: selectedSubjectId, // Subject's ObjectId
@@ -1266,12 +1272,12 @@ console.log("user data: ", selectedSubjectId, attendanceStatus, date, position.c
           })
             .then((response) => response.json())
             .then((data) => {
-              console.log('Attendance updated:', data);
-              alert('Attendance updated successfully');
+              console.log("Attendance updated:", data);
+              alert("Attendance updated successfully");
             })
             .catch((error) => {
-              console.error('Error updating attendance:', error);
-              alert('Error updating attendance');
+              console.error("Error updating attendance:", error);
+              alert("Error updating attendance");
             });
         },
         (error) => {
