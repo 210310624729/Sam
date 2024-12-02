@@ -249,7 +249,4 @@ export default TeacherClassDetails;
 
 
 
-  );
-};
 
-export default TeacherClassDetails;
