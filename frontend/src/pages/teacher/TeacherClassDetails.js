@@ -246,7 +246,6 @@
 // };
 
 // export default TeacherClassDetails;
-
 import { useEffect, useState } from "react";
 import * as React from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -256,25 +255,39 @@ import {
   Paper,
   Box,
   Typography,
-  ButtonGroup,
   Button,
-  Popper,
-  Grow,
-  ClickAwayListener,
-  MenuList,
-  MenuItem,
 } from "@mui/material";
-import { BlackButton, BlueButton } from "../../components/buttonStyles";
 import TableTemplate from "../../components/TableTemplate";
-import { KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
 import { updateStudentFields } from "../../redux/studentRelated/studentHandle";
-import * as XLSX from "xlsx"; // Import XLSX for Excel file generation
+import * as XLSX from "xlsx";
 
 const TeacherClassDetails = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [teacherLocation, setTeacherLocation] = useState(null);
   const [presentStud, setPresentStud] = useState(false);
+
+  const { sclassStudents, loading, error, getresponse } = useSelector(
+    (state) => state.sclass
+  );
+
+  const { currentUser } = useSelector((state) => state.user);
+  const classID = currentUser?.teachSclass?._id;
+  const subjectID = currentUser?.teachSubject?._id;
+
+  useEffect(() => {
+    if (classID) {
+      dispatch(getClassStudents(classID));
+      setPresentStud(false);
+    }
+  }, [dispatch, classID, presentStud]);
+
+  if (!currentUser || !classID || !subjectID) {
+    console.error("Missing teacher, class, or subject data.");
+    return <Typography variant="h6">Teacher data is missing.</Typography>;
+  }
+
+  const todayDate = new Date().toISOString().split("T")[0];
 
   const handleTakeAttendance = () => {
     if (navigator.geolocation) {
@@ -283,7 +296,7 @@ const TeacherClassDetails = () => {
           const { latitude, longitude } = position.coords;
           setTeacherLocation({ latitude, longitude });
 
-          const teacherId = currentUser._id; // assuming you have the teacher's ID in currentUser
+          const teacherId = currentUser._id;
 
           fetch(`${process.env.REACT_APP_BASE_URL}/api/teacher-location`, {
             method: "POST",
@@ -314,12 +327,23 @@ const TeacherClassDetails = () => {
   };
 
   const handleDownloadAttendance = () => {
-    const data = studentRows.map((row) => ({
-      Name: row.name,
-      RollNumber: row.rollNum,
-      Attendance: row.attendance,
-      Subject: subjectID,
-    }));
+    if (!sclassStudents || sclassStudents.length === 0) {
+      alert("No attendance data available to download.");
+      return;
+    }
+
+    const data = sclassStudents.map((student) => {
+      const isPresent = student.attendance?.some((record) => {
+        const recordDate = new Date(record.date).toISOString().split("T")[0];
+        return recordDate === todayDate && record.subName === subjectID;
+      });
+      return {
+        Name: student.name,
+        RollNumber: student.rollNum,
+        Attendance: isPresent ? "Present" : "Absent",
+        Subject: subjectID,
+      };
+    });
 
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
@@ -327,82 +351,67 @@ const TeacherClassDetails = () => {
     XLSX.writeFile(wb, `Attendance_${todayDate}.xlsx`);
   };
 
-  const { sclassStudents, loading, error, getresponse } = useSelector(
-    (state) => state.sclass
-  );
-
-  const { currentUser } = useSelector((state) => state.user);
-  const classID = currentUser.teachSclass?._id;
-  const subjectID = currentUser.teachSubject?._id;
-
-  useEffect(() => {
-    dispatch(getClassStudents(classID));
-    setPresentStud(false);
-  }, [dispatch, classID, presentStud]);
-
-  if (error) {
-    console.log(error);
-  }
-
   const studentColumns = [
     { id: "name", label: "Name", minWidth: 170 },
     { id: "rollNum", label: "Roll Number", minWidth: 100 },
     { id: "attendance", label: "Attendance", minWidth: 100 },
   ];
 
-  const todayDate = new Date().toISOString().split("T")[0];
-  const studentRows = sclassStudents.map((student) => {
-    const isPresent = student.attendance?.some((record) => {
-      const recordDate = new Date(record.date).toISOString().split("T")[0];
-      return recordDate === todayDate && record.subName === subjectID;
-    });
-    return {
-      name: student.name,
-      rollNum: student.rollNum,
-      attendance: isPresent ? "Present" : "Absent",
-      id: student._id,
-    };
-  });
+  const studentRows = Array.isArray(sclassStudents)
+    ? sclassStudents.map((student) => {
+        const isPresent = student.attendance?.some((record) => {
+          const recordDate = new Date(record.date).toISOString().split("T")[0];
+          return recordDate === todayDate && record.subName === subjectID;
+        });
+        return {
+          name: student.name,
+          rollNum: student.rollNum,
+          attendance: isPresent ? "Present" : "Absent",
+          id: student._id,
+        };
+      })
+    : [];
 
   return (
     <>
       {loading ? (
-        <div>Loading...</div>
+        <Typography variant="h6" align="center">Loading...</Typography>
       ) : (
-        <>
+        <Paper sx={{ width: "100%", overflow: "hidden", padding: 2 }}>
           <Typography variant="h4" align="center" gutterBottom>
             Class Details
           </Typography>
+
           {getresponse ? (
-            <>
-              <Box
-                sx={{ display: "flex", justifyContent: "flex-end", marginTop: "16px" }}
-              >
-                No Students Found
-              </Box>
-            </>
+            <Typography variant="h6" align="center">
+              No Students Found
+            </Typography>
           ) : (
-            <Paper sx={{ width: "100%", overflow: "hidden" }}>
+            <>
               <Typography variant="h5" gutterBottom>
                 Students List:
               </Typography>
 
-              {Array.isArray(sclassStudents) && sclassStudents.length > 0 && (
-                <TableTemplate
-                  columns={studentColumns}
-                  rows={studentRows}
-                />
+              {Array.isArray(studentRows) && studentRows.length > 0 ? (
+                <TableTemplate columns={studentColumns} rows={studentRows} />
+              ) : (
+                <Typography variant="body1">No student data available.</Typography>
               )}
+
               <Box sx={{ display: "flex", gap: 2, marginTop: 2 }}>
-                <button onClick={handleTakeAttendance}>Start Attendance</button>
-                <button onClick={handleViewAttendance}>View Attendance</button>
-                <button onClick={handleDownloadAttendance}>
+                <Button variant="contained" onClick={handleTakeAttendance}>
+                  Start Attendance
+                </Button>
+                <Button variant="contained" onClick={handleViewAttendance}>
+                  View Attendance
+                </Button>
+                <Button variant="contained" onClick={handleDownloadAttendance}>
                   Download Attendance
-                </button>
+                </Button>
               </Box>
-            </Paper>
+            </>
           )}
-        </>
+        </Paper>
       )}
     </>
   );
