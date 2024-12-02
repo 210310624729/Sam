@@ -1296,16 +1296,16 @@ console.log("user data: ", selectedSubjectId, attendanceStatus, date, position.c
   }
 
   return (
-    <div>
-      <h2>Update Attendance</h2>
-      {/* Display Student Info */}
-      {studentDetails && (
-        <div>
-          // <h3>{studentDetails.name}</h3>
-          // <p>Roll Number: {studentDetails.rollNum}</p>
-          // <p>Class: {studentDetails.sclassName?.className || 'N/A'}</p>
-        </div>
-      )}
+    // <div>
+    //   <h2>Update Attendance</h2>
+    //   {/* Display Student Info */}
+    //   {studentDetails && (
+    //     <div>
+    //       // <h3>{studentDetails.name}</h3>
+    //       // <p>Roll Number: {studentDetails.rollNum}</p>
+    //       // <p>Class: {studentDetails.sclassName?.className || 'N/A'}</p>
+    //     </div>
+    //   )}
       
       {/* Attendance Form */}
       <form onSubmit={handleSubmit}>
