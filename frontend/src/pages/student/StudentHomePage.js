@@ -83,22 +83,32 @@ const StudentHomePage = () => {
       const attendance = userDetails.attendance || [];
       const examResults = userDetails.examResult || [];
 
-      // Attendance chart data
-      const totalClasses = attendance.reduce(
-        (sum, sub) => sum + (sub.total || 0),
-        0
-      );
-      const attendedClasses = attendance.reduce(
-        (sum, sub) => sum + (sub.attended || 0),
-        0
-      );
-      const attendancePercentage = Math.round(
-        (attendedClasses / totalClasses) * 100
-      );
-      setAttendanceData([
+      console.log(attendance);
+      
+
+      const totalClasses = attendance.length;
+
+      // Count number of "Present" statuses
+      const presentCount = attendance.filter(
+        ({ status }) => status === "Present"
+      ).length;
+
+      console.log("totalClasses", totalClasses);
+      console.log("presentCount", presentCount);
+
+      // Calculate attendance percentage
+      const attendancePercentage =
+        totalClasses > 0 ? Math.round((presentCount / totalClasses) * 100) : 0;
+
+      console.log("attendancePercentage", attendancePercentage);
+
+      // Prepare data for chart
+      const attendanceData = [
         { name: "Present", value: attendancePercentage },
         { name: "Absent", value: 100 - attendancePercentage },
-      ]);
+      ];
+
+      setAttendanceData(attendanceData);
 
       // Study planner chart data
       if (examResults.length > 0) {

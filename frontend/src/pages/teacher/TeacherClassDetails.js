@@ -8,6 +8,7 @@ import { BlackButton, BlueButton} from "../../components/buttonStyles";
 import TableTemplate from "../../components/TableTemplate";
 import { KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
 import { updateStudentFields } from "../../redux/studentRelated/studentHandle";
+import * as XLSX from "xlsx";
 
 const TeacherClassDetails = () => {
     const navigate = useNavigate()
@@ -93,6 +94,34 @@ const TeacherClassDetails = () => {
             id: student._id,
         };
     });
+
+
+     const handleDownload = () => {
+         const modifiedData = studentRows.map(({ id, ...rest }) => ({
+           rollNum: rest.rollNum, // Ensure rollNum is the first column
+           name: rest.name,
+           attendance: rest.attendance,
+         }));
+
+         // Convert modified data to worksheet
+         const worksheet = XLSX.utils.json_to_sheet(modifiedData);
+
+
+       const workbook = XLSX.utils.book_new();
+       XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance");
+
+       const excelData = XLSX.write(workbook, {
+         bookType: "xlsx",
+         type: "array",
+       });
+
+       const blob = new Blob([excelData], { type: "application/octet-stream" });
+
+       const link = document.createElement("a");
+       link.href = URL.createObjectURL(blob);
+       link.download = "Attendance.xlsx";
+       link.click();
+     };
 
     const StudentsButtonHaver = ({ row }) => {
         const options = ['Take Attendance', 'Provide Marks'];
@@ -211,6 +240,9 @@ const TeacherClassDetails = () => {
         );
     };
 
+    console.log(studentRows);
+    
+
     return (
         <>
             {loading ? (
@@ -237,6 +269,7 @@ const TeacherClassDetails = () => {
                             }
                         <button onClick={handleTakeAttendance}>Start Attendance</button>
                         <button onClick={handleViewAttendance}>View Attendance</button>
+                        <button onClick={handleDownload}>Download</button>
                         </Paper>
                     )}
                 </>
