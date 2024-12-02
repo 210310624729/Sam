@@ -1301,9 +1301,9 @@ console.log("user data: ", selectedSubjectId, attendanceStatus, date, position.c
       {/* Display Student Info */}
       {studentDetails && (
         <div>
-          <h3>{studentDetails.name}</h3>
-          <p>Roll Number: {studentDetails.rollNum}</p>
-          <p>Class: {studentDetails.sclassName?.className || 'N/A'}</p>
+          // <h3>{studentDetails.name}</h3>
+          // <p>Roll Number: {studentDetails.rollNum}</p>
+          // <p>Class: {studentDetails.sclassName?.className || 'N/A'}</p>
         </div>
       )}
       
