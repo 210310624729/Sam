@@ -154,6 +154,71 @@ const getAdminDetail = async (req, res) => {
 
 //&&&&&&&&&&&&*(*&^)
 
+// const uploadStudents = async (req, res) => {
+//   try {
+//     const { students } = req.body;
+
+//     if (!students || students.length === 0) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "No students data provided",
+//       });
+//     }
+
+//     const processedStudents = [];
+//     for (let studentData of students) {
+//       const { Name, RollNumber, Password, Class } = studentData;
+
+//       if (!Name || !RollNumber || !Password || !Class) {
+//         return res.status(400).json({
+//           success: false,
+//           message: "Missing required student data",
+//         });
+//       }
+
+//       const sclass = await Sclass.findOne({ sclassName: Class });
+//       if (!sclass) {
+//         return res.status(404).json({
+//           success: false,
+//           message: `Class ${Class} not found`,
+//         });
+//       }
+
+//       const existingStudent = await Student.findOne({
+//         rollNum: RollNumber,
+//         school: "673da56b7d5944206df1e7f3",
+//       });
+//       if (existingStudent) {
+//         return res.status(400).json({
+//           success: false,
+//           message: `Student with roll number ${RollNumber} already exists`,
+//         });
+//       }
+
+//       const newStudent = new Student({
+//         name: Name,
+//         rollNum: RollNumber,
+//         password: Password,
+//         sclassName: sclass._id,
+//         school: "673da56b7d5944206df1e7f3",
+//       });
+
+//       await newStudent.save();
+//       processedStudents.push(newStudent);
+//     }
+
+//     return res.status(201).json({
+//       success: true,
+//       message: `${processedStudents.length} students uploaded successfully`,
+//       students: processedStudents,
+//     });
+//   } catch (error) {
+//     console.error("Error uploading students:", error);
+//     return res.status(500).json({ success: false, message: "Server error" });
+//   }
+// };
+
+
 const uploadStudents = async (req, res) => {
   try {
     const { students } = req.body;
@@ -195,10 +260,14 @@ const uploadStudents = async (req, res) => {
         });
       }
 
+      // Hash the password using bcrypt
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(Password, saltRounds);
+
       const newStudent = new Student({
         name: Name,
         rollNum: RollNumber,
-        password: Password,
+        password: hashedPassword,
         sclassName: sclass._id,
         school: "673da56b7d5944206df1e7f3",
       });
